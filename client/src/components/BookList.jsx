@@ -4,8 +4,9 @@ import './BookList.css';
 function BookList(props) {  
     if (!props.books || props.books.length === 0) {
         return <p class="books-not-found">No books found. Try another search?</p>;
-    }
+    } // No books found catch
 
+    // Output booklist via HTML
     return (
         <div class="book-wrapper">  
             <div class="book-list">
