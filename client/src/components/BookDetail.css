@@ -1,0 +1,13 @@
+.book-detail {
+    margin-top: 20px;
+}
+
+.book-image {
+    width: 128px;
+    height: 193px;
+}
+
+.no-book-message {
+    font-style: italic;
+    color: gray;
+}
