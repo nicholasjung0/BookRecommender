@@ -1,3 +1,5 @@
+// File located in client/src/components/BookDetail.jsx
+
 import React from 'react';
 import './BookDetail.css';
 

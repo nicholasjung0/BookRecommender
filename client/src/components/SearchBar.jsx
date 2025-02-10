@@ -1,57 +1,53 @@
-import React from 'react';
-import { useState } from 'react';
+// File located in client/src/components/SearchBar.jsx
+
+import React, { useState } from 'react';
 import './SearchBar.css';
 
-function SearchBar(props) {  
-    const [query, setQuery] = useState(""); 
-    // Prompt for query
+function SearchBar(props) {
+    const [searchTerm, setSearchTerm] = useState("");
 
-    function searchBooks() {  
-        if (query == "") {   
-            alert("Please enter a search term!"); 
+    function searchBooks() {
+        if (searchTerm.trim() === "") {
+            alert("Please enter something to search for!");
             return;
         }
 
-        // Pull info from Google Books API (call)
-        var baseUrl = "https://www.googleapis.com/books/v1/volumes?q="; 
-        var fullUrl = baseUrl + encodeURIComponent(query); 
+        const url = "https://www.googleapis.com/books/v1/volumes?q=" + encodeURIComponent(searchTerm);
 
-        // Fetch response and parse .json
-        fetch(fullUrl)
+        fetch(url)
             .then(response => response.json())
             .then(data => {
-                var bookitems; 
-                if (data.items) {
-                    bookitems = data.items;
-                } else {
-                    bookitems = []; 
+                const books = data.items || [];
+                props.onSearchResults(books);
+
+                if (books.length > 0) {
+                    const firstBookTitle = books[0].volumeInfo.title;
+                    props.onFetchRecommendations(firstBookTitle);
                 }
-
-                props.onSearchResults(bookitems);
             })
-            .catch(error => {});  
+            .catch(error => {
+                console.error('Error:', error);
+                alert('There was a problem. Please try again later.');
+            });
 
-        setQuery("");
+        setSearchTerm("");
     }
 
-    // Output to webpage via HTML
     return (
-        <div class="search-bar"> 
+        <div className="search-bar">
             <input 
                 type="text"
-                value={query}
-                onChange={function(event) { setQuery(event.target.value) }}
-                placeholder="Type book name..."
-                class="search-input"
+                value={searchTerm}
+                onChange={event => setSearchTerm(event.target.value)}
+                placeholder="Enter book name..."
+                className="search-input"
             />
-            <button 
-                onclick={searchBooks}  
-                class="search-button"
-            >
-                Search Now
+            <button onClick={searchBooks} className="search-button">
+                Search
             </button>
         </div>
     );
 }
 
 export default SearchBar;
+

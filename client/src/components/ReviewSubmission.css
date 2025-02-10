@@ -1,0 +1,11 @@
+/* File located in client/src/components/ReviewSubmission.css */
+
+.review-submission {
+    margin: 20px 0;
+}
+
+textarea {
+    width: 100%;
+    height: 100px;
+    padding: 10px;
+}

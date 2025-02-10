@@ -1,3 +1,5 @@
+// File located in client/src/components/BookList.jsx
+
 import React from 'react';
 import './BookList.css';
 
