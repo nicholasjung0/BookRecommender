@@ -1,13 +1,16 @@
 /* File located in client/src/App.jsx */
 
-/* File located in client/src/App.jsx */
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SearchBar from './components/SearchBar';
 import BookList from './components/BookList';
 import BookDetail from './components/BookDetail';
 import ReviewSubmission from './components/ReviewSubmission';
 import BookRecommendation from './components/BookRecommendation';
+import BookReviewList from './components/BookReviewList';
+import ErrorBoundary from './components/ErrorBoundary';
+import LoadingIndicator from './components/LoadingIndicator';
+import Pagination from './components/Pagination';
+import ThemeToggle from './components/ThemeToggle';
 import './App.css';
 
 function App() {
@@ -15,11 +18,16 @@ function App() {
     const [currentBook, setCurrentBook] = useState(null);
     const [bookRecommendations, setBookRecommendations] = useState([]);
     const [userReviews, setUserReviews] = useState(JSON.parse(localStorage.getItem('userReviews')) || {});
+    const [loading, setLoading] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [theme, setTheme] = useState('light');
+    const [itemsPerPage, setItemsPerPage] = useState(10);
 
     function handleBookUpdate(newBookList) {
         setAllBooks(newBookList);
         setCurrentBook(null);
         setBookRecommendations([]);
+        setCurrentPage(1);
     }
 
     function handleBookSelect(book) {
@@ -40,6 +48,7 @@ function App() {
     }
 
     const getRecommendations = async (bookTitle) => {
+        setLoading(true);
         try {
             const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${bookTitle}&maxResults=5`);
             const data = await response.json();
@@ -52,29 +61,51 @@ function App() {
             }
         } catch (error) {
             console.error('There was an error fetching recommendations:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
+    function changeTheme() {
+        setTheme(theme === 'light' ? 'dark' : 'light');
+    }
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+    };
+
+    const totalPages = Math.ceil(allBooks.length / itemsPerPage);
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = allBooks.slice(indexOfFirstItem, indexOfLastItem);
+
+
     return (
-        <div className="app-container">
-            <h1>Welcome to Book Lover's Hub</h1>
-            <SearchBar onSearchResults={handleBookUpdate} onFetchRecommendations={getRecommendations} />
-            <BookList books={allBooks} onSelectBook={handleBookSelect} />
-            <BookDetail book={currentBook} />
-            <ReviewSubmission book={currentBook} onSaveReview={handleSaveReview} />
-            <BookRecommendation />
-            
-            <h2>Your Personal Recommendations</h2>
-            <ul>
-                {bookRecommendations.map((rec, index) => (
-                    <li key={index}>
-                        Title: {rec.title}
-                        <br />
-                        Author: {rec.author}
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <ErrorBoundary>
+            <div className={`app-container ${theme}`}>
+                <h1>Welcome to Book Lover's Hub</h1>
+                <ThemeToggle theme={theme} onToggle={changeTheme} />
+                <SearchBar onSearchResults={handleBookUpdate} onFetchRecommendations={getRecommendations} />
+                <Pagination currentPage={currentPage} setCurrentPage={handlePageChange} totalPages={totalPages} />
+                <BookList books={currentItems} onSelectBook={handleBookSelect} />
+                {loading && <LoadingIndicator />}
+                <BookDetail book={currentBook} />
+                <ReviewSubmission book={currentBook} onSaveReview={handleSaveReview} />
+                <BookReviewList reviews={userReviews} />
+                <BookRecommendation />
+                <h2>Your Personal Recommendations</h2>
+                <ul>
+                    {bookRecommendations.map((rec, index) => (
+                        <li key={index}>
+                            Title: {rec.title}
+                            <br />
+                            Author: {rec.author}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </ErrorBoundary>
     );
 }
 
