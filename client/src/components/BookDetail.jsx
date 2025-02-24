@@ -5,40 +5,33 @@ import './BookDetail.css';
 
 function BookDetail(props) {  
     if (!props.book) {
-        return <p class="no-book-message">Select a book to see details.</p>;
-    } // No book selected
-
-    // All book details listed
-    var title = props.book.volumeInfo.title;
-    var authors = props.book.volumeInfo.authors;
-    var description = props.book.volumeInfo.description;
-    var imageLinks = props.book.volumeInfo.imageLinks;
-    var publisher = props.book.volumeInfo.publisher;
-    var publishedDate = props.book.volumeInfo.publishedDate;
-
-    // Author of book
-    var authorText;
-    if (authors && authors.length > 0) {
-        authorText = authors.join(", ");
-    } else {
-        authorText = "Unknown Author";
+        return <p className="no-book-message">Select a book to see details.</p>;
     }
 
-    // Generate book image
-    var bookImage;
-    if (imageLinks && imageLinks.thumbnail) {
-        bookImage = <img src={imageLinks.thumbnail} alt={title} class="book-image" />;
-    }
+    // Get book details
+    let title = props.book.volumeInfo.title || "No title available";
+    let authors = props.book.volumeInfo.authors ? props.book.volumeInfo.authors.join(", ") : "Unknown Author";
+    let description = props.book.volumeInfo.description || "No description available.";
+    let publisher = props.book.volumeInfo.publisher || "N/A";
+    let publishedDate = props.book.volumeInfo.publishedDate || "N/A";
+    let image = props.book.volumeInfo.imageLinks?.thumbnail || "";
 
-    // Output information to webpage via HTML
+    // Create Amazon search link
+    let amazonSearchLink = `https://www.amazon.com/s?k=${encodeURIComponent(title)}`;
+
     return (
-        <div class="book-detail">
+        <div className="book-detail">
             <h2>{title}</h2>
-            {bookImage}
-            <h3>{authorText}</h3>
-            <p><b>Publisher:</b> {publisher ? publisher : "N/A"}</p>
-            <p><b>Published Date:</b> {publishedDate ? publishedDate : "N/A"}</p> 
-            <p><b>Description:</b> {description ? description : "No description available."}</p>
+            {image && <img src={image} alt={title} className="book-image" />}
+            <h3>{authors}</h3>
+            <p><b>Publisher:</b> {publisher}</p>
+            <p><b>Published Date:</b> {publishedDate}</p> 
+            <p><b>Description:</b> {description}</p>
+            <p>
+                <a href={amazonSearchLink} target="_blank" rel="noopener noreferrer">
+                    Buy on Amazon
+                </a>
+            </p>
         </div>
     );
 }

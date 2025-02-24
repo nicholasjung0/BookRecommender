@@ -5,39 +5,32 @@ import './BookList.css';
 
 function BookList(props) {  
     if (!props.books || props.books.length === 0) {
-        return <p class="books-not-found">No books found. Try another search?</p>;
-    } // No books found catch
+        return <p className="books-not-found">No books found. Try another search?</p>;
+    }
 
-    // Output booklist via HTML
     return (
-        <div class="book-wrapper">  
-            <div class="book-list">
+        <div className="book-wrapper">  
+            <div className="book-list">
                 <h2>Here are some books:</h2>
                 <ul>
-                    {props.books.map(function(book) {
-                        var title = book.volumeInfo.title;
-                        var authors = book.volumeInfo.authors;
-                        var authorText;
-
-                        if (authors && authors.length > 0) {
-                            authorText = " - " + authors.join(", ");
-                        } else {
-                            authorText = " - Unknown Author";
-                        }
+                    {props.books.map((book) => {
+                        let title = book.volumeInfo.title || "Untitled Book";
+                        let authors = book.volumeInfo.authors ? book.volumeInfo.authors.join(", ") : "Unknown Author";
+                        let amazonSearchLink = `https://www.amazon.com/s?k=${encodeURIComponent(title)}`;
 
                         return (
-                            <div key={book.id} class="book-container">  
-                                <li class="book-item">
-                                    <span 
-                                        class="book-link" 
-                                        onClick={function() {
-                                            props.onSelectBook(book);
-                                        }}
-                                    >
-                                        {title ? title : "Untitled Book"} {authorText}
-                                    </span>
-                                </li>
-                            </div>
+                            <li key={book.id} className="book-item">
+                                <span 
+                                    className="book-link" 
+                                    onClick={() => props.onSelectBook(book)}
+                                >
+                                    {title} - {authors}
+                                </span>
+                                <br />
+                                <a href={amazonSearchLink} target="_blank" rel="noopener noreferrer">
+                                    Buy on Amazon
+                                </a>
+                            </li>
                         );
                     })}
                 </ul>
