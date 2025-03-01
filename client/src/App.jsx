@@ -1,6 +1,6 @@
 /* File located in client/src/App.jsx */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import SearchBar from './components/SearchBar';
 import BookList from './components/BookList';
 import BookDetail from './components/BookDetail';
@@ -34,10 +34,6 @@ function App() {
         setCurrentBook(book);
     }
 
-    function handleAddRecommendation(newRecommendation) {
-        setBookRecommendations([...bookRecommendations, newRecommendation]);
-    }
-
     function handleSaveReview(bookTitle, reviewText) {
         const updatedReviews = {
             ...userReviews,
@@ -60,7 +56,7 @@ function App() {
                 setBookRecommendations(recommendedBooks);
             }
         } catch (error) {
-            console.error('There was an error fetching recommendations:', error);
+            console.error('Error fetching recommendations:', error);
         } finally {
             setLoading(false);
         }
@@ -70,37 +66,34 @@ function App() {
         setTheme(theme === 'light' ? 'dark' : 'light');
     }
 
-    const handlePageChange = (newPage) => {
-        setCurrentPage(newPage);
-    };
-
     const totalPages = Math.ceil(allBooks.length / itemsPerPage);
-
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = allBooks.slice(indexOfFirstItem, indexOfLastItem);
-
+    const currentItems = allBooks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <ErrorBoundary>
             <div className={`app-container ${theme}`}>
-                <h1>Welcome to Book Lover's Hub</h1>
+                <h1 style={{ textAlign: 'center', color: theme === 'light' ? '#333' : '#fff' }}>Welcome to Book Lover's Hub</h1>
                 <ThemeToggle theme={theme} onToggle={changeTheme} />
                 <SearchBar onSearchResults={handleBookUpdate} onFetchRecommendations={getRecommendations} />
-                <Pagination currentPage={currentPage} setCurrentPage={handlePageChange} totalPages={totalPages} />
-                <BookList books={currentItems} onSelectBook={handleBookSelect} />
-                {loading && <LoadingIndicator />}
-                <BookDetail book={currentBook} />
-                <ReviewSubmission book={currentBook} onSaveReview={handleSaveReview} />
-                <BookReviewList reviews={userReviews} />
+                <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} />
+                
+                <div className="book-list-container">
+                    <BookList books={currentItems} onSelectBook={handleBookSelect} />
+                    {loading && <LoadingIndicator />}
+                </div>
+
+                <div className="book-detail-reviews">
+                    <BookDetail book={currentBook} />
+                    <ReviewSubmission book={currentBook} onSaveReview={handleSaveReview} />
+                    <BookReviewList reviews={userReviews} />
+                </div>
+
                 <BookRecommendation />
-                <h2>Your Personal Recommendations</h2>
-                <ul>
+                <h2 style={{ textAlign: 'center', color: theme === 'light' ? '#333' : '#fff' }}>Your Personal Recommendations</h2>
+                <ul className="recommendation-list">
                     {bookRecommendations.map((rec, index) => (
-                        <li key={index}>
-                            Title: {rec.title}
-                            <br />
-                            Author: {rec.author}
+                        <li key={index} style={{ margin: '10px', padding: '10px', border: '1px solid #ccc' }}>
+                            <strong>{rec.title}</strong> by {rec.author}
                         </li>
                     ))}
                 </ul>
