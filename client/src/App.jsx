@@ -11,6 +11,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import LoadingIndicator from './components/LoadingIndicator';
 import Pagination from './components/Pagination';
 import ThemeToggle from './components/ThemeToggle';
+import UserAccount from './components/UserAccount';
+import Login from './components/Login';
 import './App.css';
 
 function App() {
@@ -22,6 +24,9 @@ function App() {
     const [currentPage, setCurrentPage] = useState(1);
     const [theme, setTheme] = useState('light');
     const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [username, setUsername] = useState('');
+    const [showCreateAccount, setShowCreateAccount] = useState(false);
 
     function handleBookUpdate(newBookList) {
         setAllBooks(newBookList);
@@ -66,6 +71,20 @@ function App() {
         setTheme(theme === 'light' ? 'dark' : 'light');
     }
 
+    function handleCreateAccount(username, password) {
+        const accounts = JSON.parse(localStorage.getItem('accounts')) || {};
+        accounts[username] = password;
+        localStorage.setItem('accounts', JSON.stringify(accounts));
+        setUsername(username);
+        setIsLoggedIn(true);
+        setShowCreateAccount(false);
+    }
+
+    const handleLogin = (username) => {
+        setIsLoggedIn(true);
+        setUsername(username);
+    };
+
     const totalPages = Math.ceil(allBooks.length / itemsPerPage);
     const currentItems = allBooks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -74,29 +93,41 @@ function App() {
             <div className={`app-container ${theme}`}>
                 <h1 style={{ textAlign: 'center', color: theme === 'light' ? '#333' : '#fff' }}>Welcome to Book Lover's Hub</h1>
                 <ThemeToggle theme={theme} onToggle={changeTheme} />
-                <SearchBar onSearchResults={handleBookUpdate} onFetchRecommendations={getRecommendations} />
-                <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} />
-                
-                <div className="book-list-container">
-                    <BookList books={currentItems} onSelectBook={handleBookSelect} />
-                    {loading && <LoadingIndicator />}
-                </div>
-
-                <div className="book-detail-reviews">
-                    <BookDetail book={currentBook} />
-                    <ReviewSubmission book={currentBook} onSaveReview={handleSaveReview} />
-                    <BookReviewList reviews={userReviews} />
-                </div>
-
-                <BookRecommendation />
-                <h2 style={{ textAlign: 'center', color: theme === 'light' ? '#333' : '#fff' }}>Your Personal Recommendations</h2>
-                <ul className="recommendation-list">
-                    {bookRecommendations.map((rec, index) => (
-                        <li key={index} style={{ margin: '10px', padding: '10px', border: '1px solid #ccc' }}>
-                            <strong>{rec.title}</strong> by {rec.author}
-                        </li>
-                    ))}
-                </ul>
+                {!isLoggedIn ? (
+                    <>
+                        {showCreateAccount ? (
+                            <UserAccount onCreateAccount={handleCreateAccount} />
+                        ) : (
+                            <Login onLogin={handleLogin} />
+                        )}
+                        <button onClick={() => setShowCreateAccount(!showCreateAccount)}>
+                            {showCreateAccount ? 'Back to Login' : 'Create an Account'}
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <SearchBar onSearchResults={handleBookUpdate} onFetchRecommendations={getRecommendations} />
+                        <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} />
+                        <div className="book-list-container">
+                            <BookList books={currentItems} onSelectBook={handleBookSelect} />
+                            {loading && <LoadingIndicator />}
+                        </div>
+                        <div className="book-detail-reviews">
+                            <BookDetail book={currentBook} />
+                            <ReviewSubmission book={currentBook} onSaveReview={handleSaveReview} />
+                            <BookReviewList reviews={userReviews} />
+                        </div>
+                        <BookRecommendation />
+                        <h2 style={{ textAlign: 'center', color: theme === 'light' ? '#333' : '#fff' }}>Your Personal Recommendations</h2>
+                        <ul className="recommendation-list">
+                            {bookRecommendations.map((rec, index) => (
+                                <li key={index} style={{ margin: '10px', padding: '10px', border: '1px solid #ccc' }}>
+                                    <strong>{rec.title}</strong> by {rec.author}
+                                </li>
+                            ))}
+                        </ul>
+                    </>
+                )}
             </div>
         </ErrorBoundary>
     );
