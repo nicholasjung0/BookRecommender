@@ -91,19 +91,19 @@ function App() {
     return (
         <ErrorBoundary>
             <div className={`app-container ${theme}`}>
-                <h1 style={{ textAlign: 'center', color: theme === 'light' ? '#333' : '#fff' }}>Welcome to Book Lover's Hub</h1>
+                <h1 className="app-title">Welcome to Book Lover's Hub</h1>
                 <ThemeToggle theme={theme} onToggle={changeTheme} />
                 {!isLoggedIn ? (
-                    <>
+                    <div className="auth-container">
                         {showCreateAccount ? (
                             <UserAccount onCreateAccount={handleCreateAccount} />
                         ) : (
                             <Login onLogin={handleLogin} />
                         )}
-                        <button onClick={() => setShowCreateAccount(!showCreateAccount)}>
+                        <button className="auth-toggle-button" onClick={() => setShowCreateAccount(!showCreateAccount)}>
                             {showCreateAccount ? 'Back to Login' : 'Create an Account'}
                         </button>
-                    </>
+                    </div>
                 ) : (
                     <>
                         <SearchBar onSearchResults={handleBookUpdate} onFetchRecommendations={getRecommendations} />
@@ -118,10 +118,10 @@ function App() {
                             <BookReviewList reviews={userReviews} />
                         </div>
                         <BookRecommendation />
-                        <h2 style={{ textAlign: 'center', color: theme === 'light' ? '#333' : '#fff' }}>Your Personal Recommendations</h2>
+                        <h2 className="recommendation-title">Your Personal Recommendations</h2>
                         <ul className="recommendation-list">
                             {bookRecommendations.map((rec, index) => (
-                                <li key={index} style={{ margin: '10px', padding: '10px', border: '1px solid #ccc' }}>
+                                <li key={index} className="recommendation-item">
                                     <strong>{rec.title}</strong> by {rec.author}
                                 </li>
                             ))}
