@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import './SearchBar.css';
 
-function SearchBar(props) {
+function SearchBar({ onSearchResults }) {
     const [searchTerm, setSearchTerm] = useState("");
 
     function searchBooks() {
@@ -18,12 +18,7 @@ function SearchBar(props) {
             .then(response => response.json())
             .then(data => {
                 const books = data.items || [];
-                props.onSearchResults(books);
-
-                if (books.length > 0) {
-                    const firstBookTitle = books[0].volumeInfo.title;
-                    props.onFetchRecommendations(firstBookTitle);
-                }
+                onSearchResults(books);
             })
             .catch(error => {
                 console.error('Error:', error);

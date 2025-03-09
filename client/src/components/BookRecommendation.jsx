@@ -1,51 +1,65 @@
+// File located in client/src/components/BookRecommendation.jsx
+
 import React, { useState } from 'react';
 
-const BookRecommendation = ({ currentBook }) => {
-    const [recommendedBooks, setRecommendedBooks] = useState([]);
+const BookRecommendation = ({ userPreferences, setUserPreferences, getRecommendations, bookRecommendations }) => {
+    const [genreInput, setGenreInput] = useState('');
+    const [authorInput, setAuthorInput] = useState('');
 
-    const getRecommendedBooks = async (title, author, genre) => {
-        try {
-            const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${title}&maxResults=10`);
-            const data = await response.json();
-            if (data.items) {
-                const bookList = data.items.map(item => {
-                    return {
-                        title: item.volumeInfo.title,
-                        author: item.volumeInfo.authors ? item.volumeInfo.authors[0] : 'Unknown',
-                        genres: item.volumeInfo.categories || [],
-                        rating: item.volumeInfo.averageRating || 0
-                    };
-                });
-                recommendBooks(bookList, author, genre);
-            }
-        } catch (error) {
-            console.log('Error:', error);
+    const handleAddGenre = () => {
+        if (genreInput.trim() !== '') {
+            setUserPreferences({
+                ...userPreferences,
+                favoriteGenres: [...userPreferences.favoriteGenres, genreInput]
+            });
+            setGenreInput('');
         }
     };
 
-    const recommendBooks = (books, currentAuthor, currentGenre) => {
-        const filteredBooks = books.filter(book => {
-            return book.author !== currentAuthor && book.genres.includes(currentGenre);
+    const handleAddAuthor = () => {
+        if (authorInput.trim() !== '') {
+            setUserPreferences({
+                ...userPreferences,
+                favoriteAuthors: [...userPreferences.favoriteAuthors, authorInput]
+            });
+            setAuthorInput('');
+        }
+    };
+
+    const handleResetPreferences = () => {
+        setUserPreferences({
+            favoriteGenres: [],
+            favoriteAuthors: []
         });
-
-        const sortedBooks = filteredBooks.sort((a, b) => b.rating - a.rating).slice(0, 5);
-        setRecommendedBooks(sortedBooks);
-    };
-
-    const showRecommendation = () => {
-        if (currentBook) {
-            getRecommendedBooks(currentBook.title, currentBook.author, currentBook.genres[0]);
-        }
     };
 
     return (
         <div>
-            <button onClick={showRecommendation}>Show Recommendation</button>
-            <h2>Recommended Books:</h2>
+            <h2>Book Recommendations</h2>
+            <div>
+                <h3>Set Your Preferences</h3>
+                <input
+                    type="text"
+                    value={genreInput}
+                    onChange={(e) => setGenreInput(e.target.value)}
+                    placeholder="Add a favorite genre"
+                />
+                <button onClick={handleAddGenre}>Add Genre</button>
+                <input
+                    type="text"
+                    value={authorInput}
+                    onChange={(e) => setAuthorInput(e.target.value)}
+                    placeholder="Add a favorite author"
+                />
+                <button onClick={handleAddAuthor}>Add Author</button>
+                <button onClick={handleResetPreferences}>Reset Preferences</button>
+            </div>
+            <button onClick={getRecommendations}>Get Recommendations</button>
+            <h3>Your Personal Recommendations</h3>
             <ul>
-                {recommendedBooks.map((book, index) => (
+                {bookRecommendations.map((rec, index) => (
                     <li key={index}>
-                        <strong>{book.title}</strong> by {book.author} - Rating: {book.rating}
+                        <strong>{rec.title}</strong> by {rec.author}
                     </li>
                 ))}
             </ul>
