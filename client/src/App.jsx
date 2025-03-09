@@ -27,6 +27,10 @@ function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [username, setUsername] = useState('');
     const [showCreateAccount, setShowCreateAccount] = useState(false);
+    const [userPreferences, setUserPreferences] = useState({
+        favoriteGenres: [],
+        favoriteAuthors: []
+    });
 
     function handleBookUpdate(newBookList) {
         setAllBooks(newBookList);
@@ -48,17 +52,41 @@ function App() {
         localStorage.setItem('userReviews', JSON.stringify(updatedReviews));
     }
 
-    const getRecommendations = async (bookTitle) => {
+    const getRecommendations = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${bookTitle}&maxResults=5`);
-            const data = await response.json();
-            if (data.items) {
-                const recommendedBooks = data.items.map(item => ({
+            // Fetch books based on favorite genres
+            const genreQuery = userPreferences.favoriteGenres.join('|');
+            const genreResponse = await fetch(
+                `https://www.googleapis.com/books/v1/volumes?q=subject:${genreQuery}&maxResults=5`
+            );
+            const genreData = await genreResponse.json();
+
+            // Fetch books based on favorite authors
+            const authorQuery = userPreferences.favoriteAuthors.join('|');
+            const authorResponse = await fetch(
+                `https://www.googleapis.com/books/v1/volumes?q=inauthor:${authorQuery}&maxResults=5`
+            );
+            const authorData = await authorResponse.json();
+
+            // Combine results from both queries
+            const combinedResults = [...(genreData.items || []), ...(authorData.items || [])];
+
+            // Remove duplicates (books that appear in both genre and author results)
+            const uniqueResults = combinedResults.filter(
+                (book, index, self) =>
+                    index === self.findIndex((b) => b.id === book.id)
+            );
+
+            // Map the results to a simplified format
+            if (uniqueResults.length > 0) {
+                const recommendedBooks = uniqueResults.map((item) => ({
                     title: item.volumeInfo.title,
-                    author: item.volumeInfo.authors ? item.volumeInfo.authors[0] : 'Unknown'
+                    author: item.volumeInfo.authors ? item.volumeInfo.authors[0] : 'Unknown',
                 }));
                 setBookRecommendations(recommendedBooks);
+            } else {
+                setBookRecommendations([]); // No recommendations found
             }
         } catch (error) {
             console.error('Error fetching recommendations:', error);
@@ -106,7 +134,7 @@ function App() {
                     </div>
                 ) : (
                     <>
-                        <SearchBar onSearchResults={handleBookUpdate} onFetchRecommendations={getRecommendations} />
+                        <SearchBar onSearchResults={handleBookUpdate} />
                         <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} />
                         <div className="book-list-container">
                             <BookList books={currentItems} onSelectBook={handleBookSelect} />
@@ -117,15 +145,12 @@ function App() {
                             <ReviewSubmission book={currentBook} onSaveReview={handleSaveReview} />
                             <BookReviewList reviews={userReviews} />
                         </div>
-                        <BookRecommendation />
-                        <h2 className="recommendation-title">Your Personal Recommendations</h2>
-                        <ul className="recommendation-list">
-                            {bookRecommendations.map((rec, index) => (
-                                <li key={index} className="recommendation-item">
-                                    <strong>{rec.title}</strong> by {rec.author}
-                                </li>
-                            ))}
-                        </ul>
+                        <BookRecommendation
+                            userPreferences={userPreferences}
+                            setUserPreferences={setUserPreferences}
+                            getRecommendations={getRecommendations}
+                            bookRecommendations={bookRecommendations}
+                        />
                     </>
                 )}
             </div>
