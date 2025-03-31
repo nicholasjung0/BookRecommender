@@ -20,6 +20,7 @@ function App() {
   const [currentBook, setCurrentBook] = useState(null);
   const [bookRecommendations, setBookRecommendations] = useState([]);
   const [userReviews, setUserReviews] = useState(JSON.parse(localStorage.getItem('userReviews')) || {});
+  const [userRatings, setUserRatings] = useState(JSON.parse(localStorage.getItem('userRatings')) || {});
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [theme, setTheme] = useState('light');
@@ -45,35 +46,45 @@ function App() {
     }));
   }
 
-  function handleSaveReview(book, reviewText) {
+  function handleSaveReview(book, reviewText, rating) {
     const updatedReviews = {
       ...userReviews,
-      [book.id]: reviewText,
+      [book.id]: { text: reviewText, rating: rating, username: username }
     };
     setUserReviews(updatedReviews);
     localStorage.setItem('userReviews', JSON.stringify(updatedReviews));
+
+    const updatedRatings = {
+      ...userRatings,
+      [book.id]: rating
+    };
+    setUserRatings(updatedRatings);
+    localStorage.setItem('userRatings', JSON.stringify(updatedRatings));
   }
 
   const calculateRecommendationScore = (book) => {
-    const genreWeight = 0.45;
-    const ratingWeight = 0.25;
-    const popularityWeight = 0.2;
+    const genreWeight = 0.4;
+    const ratingWeight = 0.3;
+    const popularityWeight = 0.15;
     const interactionWeight = 0.1;
+    const userRatingWeight = 0.05;
 
     const genreMatch = userPreferences.favoriteGenres.some(genre =>
       book.volumeInfo.categories?.includes(genre)
-    ) ? 1 : 0;
+      ? 1 : 0;
 
     const rating = book.volumeInfo.averageRating || 0;
     const popularity = book.volumeInfo.ratingsCount || 0;
 
     const interactionScore = userInteractions.clicks.filter(id => id === book.id).length;
+    const userRating = userRatings[book.id] || 0;
 
     const score =
       genreMatch * genreWeight +
       rating * ratingWeight +
       popularity * popularityWeight +
-      interactionScore * interactionWeight;
+      interactionScore * interactionWeight +
+      userRating * userRatingWeight;
 
     return score;
   };
@@ -90,6 +101,7 @@ function App() {
     setBookRecommendations(topN.map(book => ({
       title: book.volumeInfo.title,
       author: book.volumeInfo.authors ? book.volumeInfo.authors[0] : 'Unknown',
+      id: book.id
     })));
   };
 
@@ -140,7 +152,7 @@ function App() {
             </div>
             <div className="book-detail-reviews">
               <BookDetail book={currentBook} />
-              <ReviewSubmission book={currentBook} onSaveReview={handleSaveReview} />
+              <ReviewSubmission book={currentBook} onSaveReview={handleSaveReview} username={username} />
               <BookReviewList book={currentBook} reviews={userReviews} />
             </div>
             <BookRecommendation

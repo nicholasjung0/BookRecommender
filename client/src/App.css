@@ -111,3 +111,18 @@ body {
     background-color: #f9f9f9;
     border-radius: 5px;
 }
+
+.star-rating {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.star-empty {
+  color: #ccc;
+  cursor: pointer;
+}
+
+.star-filled {
+  color: gold;
+  cursor: pointer;
+}
