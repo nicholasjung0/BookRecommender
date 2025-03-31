@@ -2,27 +2,52 @@
 
 import React, { useState } from 'react';
 
-function ReviewSubmission({ book }) {
+function ReviewSubmission({ book, onSaveReview, username }) {
     const [reviewText, setReviewText] = useState('');
+    const [rating, setRating] = useState(0);
 
     function handleTextChange(event) {
         setReviewText(event.target.value);
     }
 
+    function handleRatingChange(newRating) {
+        setRating(newRating);
+    }
+
     function saveReviewText() {
-        const allReviews = JSON.parse(localStorage.getItem('reviews')) || {};
-        const updatedReviews = {
-            ...allReviews,
-            [book.title]: reviewText
-        };
-        localStorage.setItem('reviews', JSON.stringify(updatedReviews));
+        if (book) {
+            onSaveReview(book, reviewText, rating);
+            setReviewText('');
+            setRating(0);
+        }
     }
 
     return (
         <div>
-            <h3>Write your Review</h3>
-            <textarea value={reviewText} onChange={handleTextChange}></textarea>
-            <button onClick={saveReviewText}>Save Review</button>
+            {book ? (
+                <>
+                    <h3>Write your Review for {book.volumeInfo.title}</h3>
+                    <div className="star-rating">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                            <span
+                                key={star}
+                                className={star <= rating ? "star-filled" : "star-empty"}
+                                onClick={() => handleRatingChange(star)}
+                            >
+                                ★
+                            </span>
+                        ))}
+                    </div>
+                    <textarea 
+                        value={reviewText} 
+                        onChange={handleTextChange} 
+                        placeholder="Write your review here..."
+                    />
+                    <button onClick={saveReviewText}>Save Review</button>
+                </>
+            ) : (
+                <p>Select a book to write a review.</p>
+            )}
         </div>
     );
 }
