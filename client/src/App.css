@@ -1,6 +1,6 @@
 /* File located in client/src/App.css */
-/* Add styles for the User Inputted Recommendation section */
 
+/* Add styles for the User Inputted Recommendation section */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -25,6 +25,10 @@ body {
     color: #333;
 }
 
+.app-title.dark {
+    color: #fff; /* Change title color in dark mode */
+}
+
 .auth-container {
     max-width: 400px;
     margin: 0 auto;
@@ -32,6 +36,12 @@ body {
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.auth-container.dark {
+    background-color: #444; /* Dark background for the auth container */
+    color: #fff; /* Text color in dark mode */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); /* Darker shadow in dark mode */
 }
 
 .auth-toggle-button {
@@ -58,6 +68,12 @@ body {
     border-radius: 5px;
 }
 
+.search-input.dark {
+    background-color: #666; /* Dark background for input */
+    color: #fff; /* Text color for dark mode input */
+    border: 1px solid #999; /* Darker border for input */
+}
+
 .search-button {
     padding: 10px 20px;
     margin-left: 10px;
@@ -79,6 +95,10 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.book-wrapper.dark {
+    background-color: #444; /* Dark background for book wrappers */
+}
+
 .book-item {
     margin: 10px 0;
     padding: 10px;
@@ -87,12 +107,20 @@ body {
     cursor: pointer;
 }
 
+.book-item.dark {
+    background-color: #555; /* Dark background for book items */
+}
+
 .book-detail-reviews {
     margin-top: 20px;
     background-color: #fff;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.book-detail-reviews.dark {
+    background-color: #444; /* Dark background for details and reviews */
 }
 
 .recommendation-title {
@@ -112,17 +140,21 @@ body {
     border-radius: 5px;
 }
 
+.recommendation-item.dark {
+    background-color: #555; /* Dark background for recommendations */
+}
+
 .star-rating {
-  font-size: 24px;
-  margin-bottom: 10px;
+    font-size: 24px;
+    margin-bottom: 10px;
 }
 
 .star-empty {
-  color: #ccc;
-  cursor: pointer;
+    color: #ccc;
+    cursor: pointer;
 }
 
 .star-filled {
-  color: gold;
-  cursor: pointer;
+    color: gold;
+    cursor: pointer;
 }
