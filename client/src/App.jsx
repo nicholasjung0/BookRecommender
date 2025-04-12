@@ -13,6 +13,7 @@ import Pagination from './components/Pagination';
 import ThemeToggle from './components/ThemeToggle';
 import UserAccount from './components/UserAccount';
 import Login from './components/Login';
+import FeedbackForm from './components/FeedbackForm';
 import './App.css';
 
 function App() {
@@ -161,6 +162,7 @@ function App() {
               getRecommendations={getRecommendations}
               bookRecommendations={bookRecommendations}
             />
+            <FeedbackForm />
           </>
         )}
       </div>
