@@ -1,6 +1,6 @@
 /* File located in client/src/App.jsx */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import SearchBar from './components/SearchBar';
 import BookList from './components/BookList';
 import BookDetail from './components/BookDetail';
@@ -70,8 +70,8 @@ function App() {
     const userRatingWeight = 0.05;
 
     const genreMatch = userPreferences.favoriteGenres.some(genre =>
-      book.volumeInfo.categories?.includes(genre)
-      ? 1 : 0;
+      book.volumeInfo.categories?.includes(genre) ? 1 : 0
+    );
 
     const rating = book.volumeInfo.averageRating || 0;
     const popularity = book.volumeInfo.ratingsCount || 0;
