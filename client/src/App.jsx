@@ -1,11 +1,11 @@
 /* File located in client/src/App.jsx */
 
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom'; // Import Router components
 import SearchBar from './components/SearchBar';
 import BookList from './components/BookList';
 import BookDetail from './components/BookDetail';
 import ReviewSubmission from './components/ReviewSubmission';
-import BookRecommendation from './components/BookRecommendation';
 import BookReviewList from './components/BookReviewList';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingIndicator from './components/LoadingIndicator';
@@ -14,6 +14,7 @@ import ThemeToggle from './components/ThemeToggle';
 import UserAccount from './components/UserAccount';
 import Login from './components/Login';
 import FeedbackForm from './components/FeedbackForm';
+import BookRecommendationPage from './components/BookRecommendationPage'; // Import the new BookRecommendationPage
 import './App.css';
 
 function App() {
@@ -28,9 +29,11 @@ function App() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showCreateAccount, setShowCreateAccount] = useState(false);
   const [userPreferences, setUserPreferences] = useState({ favoriteGenres: [], favoriteAuthors: [] });
   const [userInteractions, setUserInteractions] = useState({ clicks: [], timeSpent: [], searches: [] });
+  const [message, setMessage] = useState(''); // State to hold messages
 
   function handleBookUpdate(newBookList) {
     setAllBooks(newBookList);
@@ -117,56 +120,53 @@ function App() {
     setUsername(username);
     setIsLoggedIn(true);
     setShowCreateAccount(false);
+    setMessage('Account created successfully!'); // Show success message
   }
 
   const handleLogin = (username) => {
     setIsLoggedIn(true);
     setUsername(username);
+    setMessage('Login successful!'); // Show login message
   };
 
   const totalPages = Math.ceil(allBooks.length / itemsPerPage);
   const currentItems = allBooks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
-    <ErrorBoundary>
-      <div className={`app-container ${theme}`}>
-        <h1 className="app-title">Welcome to Book Lover's Hub</h1>
-        <ThemeToggle theme={theme} onToggle={changeTheme} />
-        {!isLoggedIn ? (
-          <div className="auth-container">
-            {showCreateAccount ? (
-              <UserAccount onCreateAccount={handleCreateAccount} />
-            ) : (
+    <Router>
+      <ErrorBoundary>
+        <div className={`app-container ${theme}`}>
+          <h1 className="app-title">Welcome to Book Lover's Hub</h1>
+          <ThemeToggle theme={theme} onToggle={changeTheme} />
+          <nav>
+            <Link to="/">Home</Link>
+            <Link to="/recommendations">Book Recommendations</Link>
+          </nav>
+          {!isLoggedIn ? (
+            <div>
               <Login onLogin={handleLogin} />
-            )}
-            <button className="auth-toggle-button" onClick={() => setShowCreateAccount(!showCreateAccount)}>
-              {showCreateAccount ? 'Back to Login' : 'Create an Account'}
-            </button>
-          </div>
-        ) : (
-          <>
-            <SearchBar onSearchResults={handleBookUpdate} />
-            <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} />
-            <div className="book-list-container">
-              <BookList books={currentItems} onSelectBook={handleBookSelect} />
-              {loading && <LoadingIndicator />}
+              <UserAccount onCreateAccount={handleCreateAccount} />
+              {message && <p>{message}</p>} {/* Show created account or login message */}
             </div>
-            <div className="book-detail-reviews">
-              <BookDetail book={currentBook} />
-              <ReviewSubmission book={currentBook} onSaveReview={handleSaveReview} username={username} />
-              <BookReviewList book={currentBook} reviews={userReviews} />
+          ) : (
+            <div>
+              <SearchBar onSearchResults={handleBookUpdate} />
+              <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} />
+              <div className="book-list-container">
+                <BookList books={currentItems} onSelectBook={handleBookSelect} />
+                {loading && <LoadingIndicator />}
+              </div>
+              <div className="book-detail-reviews">
+                <BookDetail book={currentBook} />
+                <ReviewSubmission book={currentBook} onSaveReview={handleSaveReview} username={username} />
+                <BookReviewList book={currentBook} reviews={userReviews} />
+              </div>
+              <FeedbackForm />
             </div>
-            <BookRecommendation
-              userPreferences={userPreferences}
-              setUserPreferences={setUserPreferences}
-              getRecommendations={getRecommendations}
-              bookRecommendations={bookRecommendations}
-            />
-            <FeedbackForm />
-          </>
-        )}
-      </div>
-    </ErrorBoundary>
+          )}
+        </div>
+      </ErrorBoundary>
+    </Router>
   );
 }
 
