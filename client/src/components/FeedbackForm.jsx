@@ -1,6 +1,7 @@
 // File: client/src/components/FeedbackForm.jsx
 
 import React, { useState } from 'react';
+import './FeedbackForm.css';
 
 function FeedbackForm() {
     const [name, setName] = useState('');
@@ -11,6 +12,8 @@ function FeedbackForm() {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (name && email && message) {
+            const mailtoLink = `mailto:nicholasjung0@gmail.com?subject=Feedback from ${name}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\nMessage: ${message}`)}`;
+            window.location.href = mailtoLink;
             setSubmitted(true);
             setName('');
             setEmail('');
