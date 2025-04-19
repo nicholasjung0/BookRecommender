@@ -8,20 +8,20 @@ const BookRecommendation = ({ userPreferences, setUserPreferences, getRecommenda
 
   const handleAddGenre = () => {
     if (genreInput.trim() !== '') {
-      setUserPreferences({
-        ...userPreferences,
-        favoriteGenres: [...userPreferences.favoriteGenres, genreInput],
-      });
+      setUserPreferences(prev => ({
+        ...prev,
+        favoriteGenres: [...prev.favoriteGenres, genreInput],
+      }));
       setGenreInput('');
     }
   };
 
   const handleAddAuthor = () => {
     if (authorInput.trim() !== '') {
-      setUserPreferences({
-        ...userPreferences,
-        favoriteAuthors: [...userPreferences.favoriteAuthors, authorInput],
-      });
+      setUserPreferences(prev => ({
+        ...prev,
+        favoriteAuthors: [...prev.favoriteAuthors, authorInput],
+      }));
       setAuthorInput('');
     }
   };

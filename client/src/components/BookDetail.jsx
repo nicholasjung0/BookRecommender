@@ -17,7 +17,7 @@ function BookDetail(props) {
     let amazonSearchLink = `https://www.amazon.com/s?k=${encodeURIComponent(title)}`;
 
     return (
-        <div className="book-detail">
+        <div className={`book-detail ${props.theme === 'dark' ? 'dark' : ''}`}> {/* Apply dark class based on theme */}
             <h2>{title}</h2>
             {image && <img src={image} alt={title} className="book-image" />}
             <h3>{authors}</h3>

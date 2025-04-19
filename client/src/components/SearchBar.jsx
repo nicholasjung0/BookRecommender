@@ -45,4 +45,3 @@ function SearchBar({ onSearchResults }) {
 }
 
 export default SearchBar;
-
