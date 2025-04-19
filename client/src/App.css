@@ -9,9 +9,9 @@ body {
     color: #333;
 }
 
-.app-container.dark {
-    background-color: #333;
-    color: #fff;
+body.dark-mode {
+    background-color: #333;  /* Dark background for body in dark mode */
+    color: #fff;             /* Light text color in dark mode */
 }
 
 .app-container {
@@ -22,10 +22,10 @@ body {
 
 .app-title {
     text-align: center;
-    color: #333;
+    color: #333; /* Default text color */
 }
 
-.app-title.dark {
+body.dark-mode .app-title {
     color: #fff; /* Change title color in dark mode */
 }
 
@@ -97,6 +97,7 @@ body {
 
 .book-wrapper.dark {
     background-color: #444; /* Dark background for book wrappers */
+    color: #fff; /* Ensure text is visible in dark mode */
 }
 
 .book-item {
@@ -109,6 +110,20 @@ body {
 
 .book-item.dark {
     background-color: #555; /* Dark background for book items */
+    color: #fff; /* Text color for book items in dark mode */
+}
+
+.book-detail {
+    margin-top: 20px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.book-detail.dark {
+    background-color: #444; /* Dark background for book details */
+    color: #fff; /* Text color for book details in dark mode */
 }
 
 .book-detail-reviews {
@@ -121,6 +136,7 @@ body {
 
 .book-detail-reviews.dark {
     background-color: #444; /* Dark background for details and reviews */
+    color: #fff; /* Text color for reviews in dark mode */
 }
 
 .recommendation-title {
@@ -142,6 +158,7 @@ body {
 
 .recommendation-item.dark {
     background-color: #555; /* Dark background for recommendations */
+    color: #fff; /* Text color for recommendations in dark mode */
 }
 
 .star-rating {
