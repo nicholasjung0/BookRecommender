@@ -1,15 +1,71 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+// File located at client/src/components/SearchBar.test.jsx
+
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
 import SearchBar from './SearchBar';
 
-test('calls onSearchResults when the search button is clicked', () => {
-    const mockSearch = jest.fn();
-    render(<SearchBar onSearchResults={mockSearch} />);
+// Mock the global fetch
+global.fetch = jest.fn();
 
-    const input = screen.getByPlaceholderText('Enter book name...');
-    const button = screen.getByText('Search');
+describe('SearchBar Component', () => {
+    let onSearchResultsMock;
 
-    fireEvent.change(input, { target: { value: 'React' } });
-    fireEvent.click(button);
+    beforeEach(() => {
+        onSearchResultsMock = jest.fn();
+        fetch.mockClear();
+        jest.spyOn(window, 'alert').mockImplementation(() => {}); // Mock alert
+    });
 
-    expect(mockSearch).toHaveBeenCalled();
+    afterEach(() => {
+        window.alert.mockRestore();
+    });
+
+    test('renders input and button', () => {
+        render(<SearchBar onSearchResults={onSearchResultsMock} />);
+
+        expect(screen.getByPlaceholderText('Enter book name...')).toBeInTheDocument();
+        expect(screen.getByText('Search')).toBeInTheDocument();
+    });
+
+    test('shows alert if search term is empty', () => {
+        render(<SearchBar onSearchResults={onSearchResultsMock} />);
+
+        fireEvent.click(screen.getByText('Search'));
+
+        expect(window.alert).toHaveBeenCalledWith('Please enter something to search for!');
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('fetches books and calls onSearchResults', async () => {
+        const fakeBooks = [{ id: '1', volumeInfo: { title: 'Test Book' } }];
+        fetch.mockResolvedValueOnce({
+            json: async () => ({ items: fakeBooks }),
+        });
+
+        render(<SearchBar onSearchResults={onSearchResultsMock} />);
+
+        fireEvent.change(screen.getByPlaceholderText('Enter book name...'), { target: { value: 'Harry Potter' } });
+        fireEvent.click(screen.getByText('Search'));
+
+        await waitFor(() => {
+            expect(fetch).toHaveBeenCalledTimes(1);
+            expect(fetch).toHaveBeenCalledWith(expect.stringContaining('Harry%20Potter'));
+            expect(onSearchResultsMock).toHaveBeenCalledWith(fakeBooks);
+        });
+    });
+
+    test('shows alert on fetch error', async () => {
+        fetch.mockRejectedValueOnce(new Error('Fetch failed'));
+
+        render(<SearchBar onSearchResults={onSearchResultsMock} />);
+
+        fireEvent.change(screen.getByPlaceholderText('Enter book name...'), { target: { value: 'Error Test' } });
+        fireEvent.click(screen.getByText('Search'));
+
+        await waitFor(() => {
+            expect(fetch).toHaveBeenCalled();
+            expect(window.alert).toHaveBeenCalledWith('There was a problem. Please try again later.');
+        });
+    });
 });

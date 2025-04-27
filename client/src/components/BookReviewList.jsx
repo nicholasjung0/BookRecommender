@@ -1,5 +1,3 @@
-// File: client/src/components/BookReviewList.jsx
-
 import React, { useState, useEffect } from 'react';
 
 function BookReviewList({ book, reviews }) {
@@ -7,7 +5,7 @@ function BookReviewList({ book, reviews }) {
 
     useEffect(() => {
         if (book && reviews[book.id]) {
-            setBookReviews([reviews[book.id]]);
+            setBookReviews(reviews[book.id]); // <-- FIXED: remove extra []
         } else {
             setBookReviews([]);
         }
