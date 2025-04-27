@@ -1,188 +1,211 @@
-/* File located in client/src/App.jsx */
+// File located in client/src/App.jsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom'; 
 import SearchBar from './components/SearchBar';
-import BookList from './components/BookList';
-import BookDetail from './components/BookDetail'; // Import BookDetail
-import ReviewSubmission from './components/ReviewSubmission';
-import BookReviewList from './components/BookReviewList';
+import BookDetail from './components/BookDetail'; 
 import ErrorBoundary from './components/ErrorBoundary';
-import LoadingIndicator from './components/LoadingIndicator';
-import Pagination from './components/Pagination';
 import ThemeToggle from './components/ThemeToggle';
+import BookRecommendation from './components/BookRecommendation'; 
+import BookSearchPage from './components/BookSearchPage'; 
+import HomeComponent from './components/HomeComponent'; 
 import UserAccount from './components/UserAccount';
 import Login from './components/Login';
-import FeedbackForm from './components/FeedbackForm';
-import RecommendationWeightSettings from './components/RecommendationWeightSettings'; 
-import BookRecommendation from './components/BookRecommendation'; 
-import BookSearchPage from './components/BookSearchPage'; // BookSearchPage component
-import HomeComponent from './components/HomeComponent'; 
 import './App.css';
 
 function App() {
   const [allBooks, setAllBooks] = useState([]);
-  const [currentBook, setCurrentBook] = useState(null); // Track the current book selected
+  const [currentBook, setCurrentBook] = useState(null);
   const [bookRecommendations, setBookRecommendations] = useState([]);
-  const [userReviews, setUserReviews] = useState(JSON.parse(localStorage.getItem('userReviews')) || {});
-  const [userRatings, setUserRatings] = useState(JSON.parse(localStorage.getItem('userRatings')) || {});
-  const [loading, setLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [theme, setTheme] = useState('light'); // State for current theme
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [showCreateAccount, setShowCreateAccount] = useState(false);
-  const [userPreferences, setUserPreferences] = useState({ favoriteGenres: [], favoriteAuthors: [] });
-  const [userInteractions, setUserInteractions] = useState({ clicks: [], timeSpent: [], searches: [] });
-  const [userWeights, setUserWeights] = useState({
-    genreWeight: 0.4,
-    ratingWeight: 0.3,
-    popularityWeight: 0.15,
-    interactionWeight: 0.1,
-    userRatingWeight: 0.05,
+  const [allRecommendations, setAllRecommendations] = useState([]);
+  const [userPreferences, setUserPreferences] = useState({ 
+    favoriteGenres: [], 
+    favoriteAuthors: [] 
   });
-  const [message, setMessage] = useState('');
+  const [theme, setTheme] = useState('light');
+  const [showAllRecommendations, setShowAllRecommendations] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  // Function to update the book list
+  useEffect(() => {
+    document.body.className = theme;
+  }, [theme]);
+
   const handleBookUpdate = (newBookList) => {
     setAllBooks(newBookList);
-    setCurrentBook(null); // Reset the selected book
+    setCurrentBook(null);
   };
 
-  // Function to select a book
-  const handleBookSelect = (book) => {
-    setCurrentBook(book); // Update the current book state
+  const handleCreateAccount = (username, password) => {
+    const accounts = JSON.parse(localStorage.getItem('accounts')) || {};
+    accounts[username] = password;
+    localStorage.setItem('accounts', JSON.stringify(accounts));
   };
 
-  // Function to save user review
-  const handleSaveReview = (book, reviewText, rating) => {
-    const updatedReviews = {
-      ...userReviews,
-      [book.id]: { text: reviewText, rating: rating, username: username }
-    };
-    setUserReviews(updatedReviews);
-    localStorage.setItem('userReviews', JSON.stringify(updatedReviews));
-
-    const updatedRatings = {
-      ...userRatings,
-      [book.id]: rating
-    };
-    setUserRatings(updatedRatings);
-    localStorage.setItem('userRatings', JSON.stringify(updatedRatings));
+  const handleLogin = (username) => {
+    setCurrentUser(username);
   };
 
-  // Function to toggle theme
-  const changeTheme = () => {
-    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+  const handleLogout = () => {
+    setCurrentUser(null);
   };
 
-  // Function to calculate recommendation score
   const calculateRecommendationScore = (book) => {
-    const { 
-      genreWeight, 
-      ratingWeight, 
-      popularityWeight, 
-      interactionWeight, 
-      userRatingWeight 
-    } = userWeights; // Use user-defined weights
+    if (!book.volumeInfo) return 0;
 
-    const genreMatch = userPreferences.favoriteGenres.some(genre =>
-      book.volumeInfo.categories?.includes(genre) ? 1 : 0
-    );
+    let score = 0;
+    const { categories, authors } = book.volumeInfo;
 
-    const rating = book.volumeInfo.averageRating || 0;
-    const popularity = book.volumeInfo.ratingsCount || 0;
+    if (categories && userPreferences.favoriteGenres.length > 0) {
+      userPreferences.favoriteGenres.forEach(genre => {
+        if (categories.some(cat => cat.toLowerCase().includes(genre.toLowerCase()))) {
+          score += 2;
+        }
+      });
+    }
 
-    const interactionScore = userInteractions.clicks.filter(id => id === book.id).length;
-    const userRating = userRatings[book.id] || 0;
-
-    const score =
-      genreMatch * genreWeight +
-      rating * ratingWeight +
-      popularity * popularityWeight +
-      interactionScore * interactionWeight +
-      userRating * userRatingWeight;
+    if (authors && userPreferences.favoriteAuthors.length > 0) {
+      userPreferences.favoriteAuthors.forEach(author => {
+        if (authors.some(auth => auth.toLowerCase().includes(author.toLowerCase()))) {
+          score += 3;
+        }
+      });
+    }
 
     return score;
   };
 
-  // Function to fetch recommendations
   const getRecommendations = () => {
+    if (allBooks.length === 0) {
+      const defaultRecommendations = [
+        { id: '1', title: 'The Hobbit', author: 'J.R.R. Tolkien', score: 0 },
+        { id: '2', title: 'Pride and Prejudice', author: 'Jane Austen', score: 0 },
+        { id: '3', title: '1984', author: 'George Orwell', score: 0 },
+        { id: '4', title: 'To Kill a Mockingbird', author: 'Harper Lee', score: 0 },
+        { id: '5', title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', score: 0 },
+      ];
+
+      const filteredDefault = defaultRecommendations.map(book => {
+        let score = 0;
+        if (userPreferences.favoriteAuthors.some(author => 
+          book.author.toLowerCase().includes(author.toLowerCase()))) {
+          score += 3;
+        }
+        return { ...book, score };
+      }).sort((a, b) => b.score - a.score);
+
+      setAllRecommendations(filteredDefault);
+      setBookRecommendations(filteredDefault.slice(0, 10));
+      setShowAllRecommendations(false);
+      return;
+    }
+
     const scoredBooks = allBooks.map(book => ({
       ...book,
       score: calculateRecommendationScore(book),
     }));
 
-    const sortedBooks = scoredBooks.sort((a, b) => b.score - a.score);
-    const topN = sortedBooks.slice(0, 10);
+    const sortedBooks = scoredBooks.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.volumeInfo.title.localeCompare(a.volumeInfo.title);
+    });
 
-    setBookRecommendations(topN.map(book => ({
-      title: book.volumeInfo.title,
-      author: book.volumeInfo.authors ? book.volumeInfo.authors[0] : 'Unknown',
-      id: book.id
-    })));
+    const filteredBooks = userPreferences.favoriteGenres.length > 0 || 
+                         userPreferences.favoriteAuthors.length > 0
+      ? sortedBooks.filter(book => book.score > 0)
+      : sortedBooks;
+
+    const allRecs = filteredBooks.slice(0, 100).map(book => ({
+      id: book.id,
+      title: book.volumeInfo?.title || "Unknown Title",
+      author: book.volumeInfo?.authors?.[0] || "Unknown Author",
+      score: book.score,
+    }));
+
+    setAllRecommendations(allRecs);
+    setBookRecommendations(allRecs.slice(0, 10));
+    setShowAllRecommendations(false);
   };
 
-  // Function to create an account
-  function handleCreateAccount(username, password) {
-    const accounts = JSON.parse(localStorage.getItem('accounts')) || {};
-    accounts[username] = password;
-    localStorage.setItem('accounts', JSON.stringify(accounts));
-    setUsername(username);
-    setIsLoggedIn(true);
-    setShowCreateAccount(false);
-    setMessage('Account created successfully!'); // Show success message
-  }
-
-  // Function to handle login
-  const handleLogin = (username) => {
-    setIsLoggedIn(true);
-    setUsername(username);
-    setMessage('Login successful!'); // Show login message
+  const toggleShowAllRecommendations = () => {
+    if (showAllRecommendations) {
+      setBookRecommendations(allRecommendations.slice(0, 10));
+    } else {
+      setBookRecommendations(allRecommendations);
+    }
+    setShowAllRecommendations(!showAllRecommendations);
   };
 
-  const totalPages = Math.ceil(allBooks.length / itemsPerPage);
-  const currentItems = allBooks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const changeTheme = () => {
+    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
 
   return (
     <Router>
       <ErrorBoundary>
-        <div className={`app-container ${theme}`}> {/* Apply theme class */}
-          <h1 className="app-title">Welcome to Book Lover's Hub</h1>
-          <ThemeToggle theme={theme} onToggle={changeTheme} />
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/search">Book Search</Link>
-            <Link to="/recommendations">Book Recommendations</Link>
-            <Link to="/recommendation-settings">Recommendation Settings</Link>
-          </nav>
-          <Routes>
-            <Route path="/" element={<HomeComponent />} />
-            <Route 
-              path="/search" 
-              element={<BookSearchPage 
-                onSearchResults={handleBookUpdate} 
-                onSelectBook={handleBookSelect} 
-              />} 
-            />
-            <Route 
-              path="/recommendations" 
-              element={<BookRecommendation 
-                userPreferences={userPreferences} 
-                setUserPreferences={setUserPreferences}
-                getRecommendations={getRecommendations}
-                bookRecommendations={bookRecommendations} />} 
-            />
-            <Route 
-              path="/recommendation-settings" 
-              element={<RecommendationWeightSettings onWeightsChange={setUserWeights} />} 
-            />
-          </Routes>
+        <div className={`app-container ${theme}`}>
+          <header className="app-header">
+            <h1 className="app-title">BookLovers Hub</h1>
+            <ThemeToggle theme={theme} onToggle={changeTheme} />
+            {currentUser && (
+              <div className="user-info">
+                <span>Welcome, {currentUser}!</span>
+                <button onClick={handleLogout} className="logout-button">Logout</button>
+              </div>
+            )}
+          </header>
 
-          {/* Render BookDetail when a book is selected */}
-          {currentBook && <BookDetail book={currentBook} theme={theme} />} {/* Pass theme as prop */}
+          <nav className="navbar">
+            <Link to="/" className="nav-link">Home</Link>
+            <Link to="/search" className="nav-link">Book Search</Link>
+            <Link to="/recommendations" className="nav-link">Recommendations</Link>
+            <Link to="/account" className="nav-link">Account</Link>
+          </nav>
+
+          <main className="main-content">
+            <Routes>
+              <Route path="/" element={<HomeComponent />} />
+              <Route 
+                path="/search" 
+                element={
+                  <BookSearchPage 
+                    onSearchResults={handleBookUpdate} 
+                    onSelectBook={setCurrentBook} 
+                    theme={theme}
+                  />
+                } 
+              />
+              <Route 
+                path="/recommendations" 
+                element={
+                  <BookRecommendation 
+                    userPreferences={userPreferences} 
+                    setUserPreferences={setUserPreferences}
+                    getRecommendations={getRecommendations}
+                    bookRecommendations={bookRecommendations}
+                    allRecommendations={allRecommendations}
+                    showAllRecommendations={showAllRecommendations}
+                    toggleShowAll={toggleShowAllRecommendations}
+                    theme={theme}
+                  />
+                } 
+              />
+              <Route 
+                path="/account" 
+                element={
+                  <div className="account-page">
+                    <Login onLogin={handleLogin} />
+                    <UserAccount onCreateAccount={handleCreateAccount} />
+                  </div>
+                }
+              />
+            </Routes>
+          </main>
+
+          {currentBook && <BookDetail book={currentBook} theme={theme} />}
+
+          <footer className="app-footer">
+            <p>© {new Date().getFullYear()} BookLovers Hub</p>
+          </footer>
         </div>
       </ErrorBoundary>
     </Router>
